@@ -13,5 +13,6 @@
 9. Introducción a Deep Learning
 
 ### Integrantes:
+* Cabello Tejeida Sergio Agustín
 * Fajardo García María Isabel
 * López Balcazar Fernando
