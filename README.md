@@ -16,3 +16,4 @@
 * Cabello Tejeida Sergio Agustín
 * Fajardo García María Isabel
 * López Balcazar Fernando
+* Martínez Valdés Karen
