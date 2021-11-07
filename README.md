@@ -17,3 +17,4 @@
 * Fajardo García María Isabel
 * López Balcazar Fernando
 * Martínez Valdés Karen
+* Rodríguez García Sergio Enrique
