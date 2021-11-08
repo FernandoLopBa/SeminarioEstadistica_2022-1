@@ -13,8 +13,8 @@
 9. Introducción a Deep Learning
 
 ### Integrantes:
-* Cabello Tejeida Sergio Agustín
-* Fajardo García María Isabel
-* López Balcazar Fernando
-* Martínez Valdés Karen
-* Rodríguez García Sergio Enrique
+* [Cabello Tejeida Sergio Agustín](https://github.com/Sceorngmiaos)
+* [Fajardo García María Isabel](https://github.com/chabb-maker)
+* [López Balcazar Fernando](https://github.com/FernandoLopBa)
+* [Martínez Valdés Karen](https://github.com/KarenMartinezV)
+* [Rodríguez García Sergio Enrique](https://github.com/SergioRoGa)
