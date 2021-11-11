@@ -19,7 +19,7 @@ ini_externa= pd.read_csv('base_ini_externa.txt', sep=" ")
 comp_2=pd.read_csv('base_comportamiento_2.txt', sep=" ")
 comp_3=pd.read_csv('base_comportamiento_3.csv')
 inv=pd.read_csv('base_inversion.txt', sep=" ")
-ini_interna_externa =pd.merge(ini_interna,pd.merge(ini_parte1,ini_externa))
+
 
 #Analisis Descriptivo
     
@@ -101,7 +101,10 @@ sns.heatmap(int_corr,cmap="coolwarm")
 
 #Notamos que categoria 3 y componente interno 3 tienen una correlación positiva
 #Componente 3 y Categoria 2, Categoria 2 y Categoria 3 tienen una correlación
-#negativa
+#negativa, por lo tanto nos quedaremos con Categoria 3 y quitamos las demas
+
+ini_interna = ini_interna.drop(["categoria2","comp_interno3"],axis="columns")
+
 
 
 
@@ -127,8 +130,10 @@ plt.hist(ini_externa["comp_externo4"],color="salmon")
 ext_corr=ini_externa.corr('pearson')
 sns.heatmap(ext_corr,cmap="coolwarm")
 ##Notamos que componente externo 3 y 4 tienen una correlación negativa
-
-
+#Como los dos estan relacionados nos quedamos con el 3
+ini_externa = ini_externa.drop("comp_externo4",axis="columns")
+#Y ahora hacemos la union de las dos tablas
+ini_interna_externa = pd.merge(ini_interna,pd.merge(ini_parte1,ini_externa))
 
     ##Inversión
 plt.hist(inv["inversion"],color="salmon") 
@@ -146,7 +151,12 @@ plt.pie([x,y,z],labels=["0-100","100-1,000","1,000-100,000"],autopct="%1.1f%%", 
 #un grafico circular, agrupando la información dentro de los interválos que consideramos
 #relevantes que son {(0,100),(100,1000),(1000,100,000)}
 
-##Ahora vallamos con el analisis del comportamiento
+
+
+
+#######Analisis de las Bases Comportamiento 1,2
+
+
 
 comp_junta = pd.merge(comp_2,comp_3)
 Caso_credito = comp_junta["num_caso"].unique().tolist()
@@ -154,23 +164,30 @@ a=list(range(1,int(max(comp_junta["Tiempo_aparicion"]+1))))
 x=[]
 y=[]
 v=[]
+j=0
+#Primer acercamiento para conocer el manejo de credito por cliente 
 
-#primer acercamiento para conocer el manejo de credito 
-#Cuidado tiempo promedio de ejecucion 15 minutos
+##Nota: Cuidado tiempo promedio de ejecucion 15 minutos
 for i in Caso_credito:
     df_aux = comp_junta[comp_junta.num_caso == i]
+    #Tasa de Meses con Comportamiento Deudor/Cantidad de meses que está registrado
     x.append(sum(df_aux["comportamiento_j"]>0)/len(df_aux["comportamiento_j"].tolist()))
+    #Maximo de impagos
     y.append(max(df_aux["comportamiento_j"]))
+    #Maximo tiempo de aparición que tuvo el cliente en la base
     v.append(int(max(df_aux["Tiempo_aparicion"])))
-#Exploracion del indice de veces que se retrasaron en el pago vs vida total de su credito
+
+
+#Veces que se retrasaron en el pago vs Vida Total del credito
 dfplot = pd.DataFrame.from_dict(Counter(x), orient='index').reset_index()
-plt.hist(dfplot["index"],15,color='blue', ec = 'black')
-#Exploracion número maximo de meses que un cliente se retraso
+plt.hist(dfplot["index"],50,color='blue', ec = 'black')
+
+#Número maximo de meses de retraso por cliente
 dfplot = pd.DataFrame.from_dict(Counter(y), orient='index').reset_index()
 plt.hist(dfplot["index"],10,color='blue', ec = 'black')
-#Exploracion para saber la cantidad de meses que lleva con nosotros un cliente
+
+#Cantidad de meses que lleva con nosotros un cliente
 dfplot = pd.DataFrame.from_dict(Counter(v), orient='index').reset_index()
-plt.hist(dfplot["index"],100,color='blue', ec = 'black')
 plt.bar(dfplot["index"],dfplot[0],color='blue', ec = 'black')
 
 
@@ -190,13 +207,14 @@ plt.bar(dfplot["index"],dfplot[0],color='blue', ec = 'black')
 #                continue;
 #        else:
 #            for j in range(len(df_aux["num_caso"].tolist())-k):
-#                df_aux = df_aux[df_aux.Tiempo_aparicion>=j]
+#                df_aux = df_aux[df_aux.Tiempo_aparicion>=j] 
 #                df_aux2 = df_aux[df_aux.Tiempo_aparicion<=k+j]
 #                if sum(df_aux2["comportamiento_j"]>0)==k+1:
 #                    aux = aux+1
 #                    break;
-#    print('Paso ', k,' finalizado hora: ',time.ctime())
+#    print('Paso ', k,' finalizado hora: ',time.ctime()) 
 #    z.append(aux)
+
 
 
 #Exploracion de cuantos clientes en una ventana continua de tiempo no hicieron un pago
@@ -238,7 +256,7 @@ Cliente_bueno = []
 for i in Caso_credito:
     if(i in Caso_credito_new):
         df_aux=comp_junta[comp_junta.num_caso == i]
-        if(sum(df_aux["comportamiento_j"]>0)/len(df_aux["comportamiento_j"]>.4)):
+        if(sum(df_aux["comportamiento_j"]>0)/len(df_aux["comportamiento_j"])>.70):
             Cliente_bueno.append(0)
         else:
             Cliente_bueno.append(1)
@@ -248,11 +266,40 @@ for i in Caso_credito:
 CroosNC= pd.DataFrame(Caso_credito).join(pd.DataFrame(Cliente_bueno),lsuffix='_id_', rsuffix='Comp_final')
 CroosNC= CroosNC.rename(columns = {'0_id_':'_id_','0Comp_final':'Comp_final'})
 
-ini_final = pd.merge(ini_interna_externa,CroosNC)
+ini_prefinal = pd.merge(ini_interna_externa,CroosNC)
+
 #Como su nombre lo indica ini_final es nuestro conjunto de datos ya explorados y clasificados
 #mientras que CrossNC es simplemente la clasificacion a cada numero de cliente.
+
+
 #Ahora complementemos un poco mas el analisis ya observado con anterioridad
-int_corr=ini_final.corr('pearson')
-sns.heatmap(int_corr,cmap="coolwarm")
 
 
+inipf_corr=ini_prefinal.corr('pearson')
+sns.heatmap(inipf_corr,cmap="coolwarm")
+
+#Ahora sacaremos los valores de los clientes que no se pudieron catalogar como bueno o malo
+#recoradndo que si comp_final=1 entonces fue un buen cliente
+# si comp_final= 0 entonces fue un mal cliente y quitamos comp_final=2 pues es el
+#cliente al que no pudimos determinar 
+#Quitamos id_1,id_2,fecha pues no nos aporta por ahora información 
+ini_final=ini_prefinal.drop(["_id_","_id2_","fecha_inicio"],axis="columns")
+#Quitamos los clientes que no podemos determinar
+ini_final = ini_final[ini_final.Comp_final!=2]
+inif_corr=ini_final.corr('pearson')
+sns.heatmap(inif_corr,cmap="coolwarm")
+
+
+#Aplicando regresión logistica
+from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LogisticRegression
+#Definición del Modelo
+ini_final["comp_interno2"]= LabelEncoder().fit_transform(ini_final["comp_interno2"])
+
+X= ini_final.iloc[:,0:9]
+Y = ini_final["Comp_final"]
+#Por como explico las variables el profesor y la itnerpretción del mismo, podemos cambiar los NaN
+#por 0 debido a ser variables que nos indican la inversion en el banco o externos por ejemplo
+X = X.fillna(0)
+#Ya el modelo con lo explicado el 08/10/2021
+model=LogisticRegression(C=1, solver="newton-cg",max_iter=10000).fit(X,Y)
